@@ -2,46 +2,43 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
 module Data.Paganini.Monad
-  (Spec
-  ,Let(..)
-  ,Def(..)
-  ,variable
-  ,variable'
-  ,(.=.)
-  ,value
-
-  ,Data.Paganini.Monad.seq
-  ,seq'
-  ,ucyc
-  ,ucyc'
-  ,cyc
-  ,cyc'
-  ,mset
-  ,mset'
-  ,set
-  ,set'
-
-  ,Variable()
-  ,Constructor()
-  ,Expr()
-  ,Program()
-  ,Constraint(..)
-
-  ,FromConstructor(..)
-  ,FromVariable(..)
-  ) where
+  ( Spec
+  , Let(..)
+  , Def(..)
+  , variable
+  , variable'
+  , (.=.)
+  , value
+  , Data.Paganini.Monad.seq
+  , seq'
+  , ucyc
+  , ucyc'
+  , cyc
+  , cyc'
+  , mset
+  , mset'
+  , set
+  , set'
+  , Variable()
+  , Constructor()
+  , Expr()
+  , Program()
+  , Constraint(..)
+  , FromConstructor(..)
+  , FromVariable(..)
+  )
+where
 
 import           BinderAnn.Monadic
 
 import           Control.Monad.State.Strict
-import qualified Data.Map.Strict            as Map
+import qualified Data.Map.Strict               as Map
 
 import           Data.Paganini.Expressions
 
 -- | Anonymous variable without parameter value.
 anonym :: Variable
-anonym = Variable { ident = Nothing
-                  , param = Nothing }
+anonym = Variable { ident = Nothing, param = Nothing }
 
 -- | Paganini monad.
 type Spec = StateT Program IO
@@ -49,30 +46,51 @@ type Spec = StateT Program IO
 -- | Polymorphic variables.
 newtype Let = Let (forall a . FromVariable a => a)
 
+updateVariable :: Variable -> Variable -> Stmt -> Stmt
+updateVariable v nv va@(VarAssign v') | v == v'   = VarAssign nv
+                                      | otherwise = va
+
+updateVariable v nv va@(ConstrDef c) | v == var c = ConstrDef $ c { var = nv }
+                                     | otherwise  = va
+
+updateVariable _ _ stmt = stmt
+
 instance AnnotatedM Spec Let where
   annotateM m (Info name _) = do
     Let v <- m
     let v' = v { ident = name }
 
     stmts <- gets statements
-    modify (\s -> s { statements = stmts ++ [VarAssign v'] })
+    let stmts' = map (updateVariable v v') stmts
+    modify (\s -> s { statements = stmts' })
 
     return (Let $ fromVariable v')
 
 specVariable :: Variable -> Spec Let
 specVariable v = return $ Let (fromVariable v)
 
+nextVariable :: Spec Variable
+nextVariable = do
+  ctr <- gets counter
+  modify (\s -> s { counter = ctr + 1 })
+  return $ anonym { ident = Just ('v' : show ctr) }
+
 -- | Declares a variables with given parameter.
 variable' :: Integer -> Spec Let
-variable' n = specVariable v
-  where v = Variable { ident = Nothing
-                     , param = Just n }
+variable' n = do
+  v     <- nextVariable
+  stmts <- gets statements
+  let v' = v { param = Just n }
+  modify (\s -> s { statements = stmts ++ [VarAssign v'] })
+  specVariable v'
 
 -- | Declares a variable with no parameter.
 variable :: Spec Let
-variable = specVariable v
-  where v = Variable { ident = Nothing
-                     , param = Nothing }
+variable = do
+  v     <- nextVariable
+  stmts <- gets statements
+  modify (\s -> s { statements = stmts ++ [VarAssign v] })
+  specVariable v
 
 -- | Introduces a variable definition.
 (.=.) :: Variable -> Expr -> Spec ()
@@ -95,27 +113,34 @@ newtype Def = Def (forall a . FromConstructor a => a)
 instance AnnotatedM Spec Def where
   annotateM m (Info name _) = do
     Def con <- m
-    let v = (var con) { ident = name }
+    let v    = (var con) { ident = name }
     let con' = con { var = v }
 
     stmts <- gets statements
-    modify (\s -> s { statements = stmts ++ [ConstrDef con'] })
+    let stmts' = map (updateVariable (var con) v) stmts
+    modify (\s -> s { statements = stmts' })
 
     return (Def $ fromConstructor con')
 
 constr :: String -> Expr -> Spec Def
-constr s e = return (Def $ fromConstructor c)
-  where c = Constructor { var        = anonym
-                        , func       = s
-                        , arg        = e
-                        , constraint = Nothing }
+constr s e = do
+  v <- nextVariable
+  let c = Constructor { var = v, func = s, arg = e, constraint = Nothing }
+
+  stmts <- gets statements
+  modify (\p -> p { statements = stmts ++ [ConstrDef c] })
+
+  return (Def $ fromConstructor c)
 
 constr' :: String -> Expr -> Constraint -> Spec Def
-constr' s e ctr = return (Def $ fromConstructor c)
-  where c = Constructor { var        = anonym
-                        , func       = s
-                        , arg        = e
-                        , constraint = Just ctr }
+constr' s e ctr = do
+  v <- nextVariable
+  let c = Constructor { var = v, func = s, arg = e, constraint = Just ctr }
+
+  stmts <- gets statements
+  modify (\p -> p { statements = stmts ++ [ConstrDef c] })
+
+  return (Def $ fromConstructor c)
 
 -- | Sequence constructor.
 seq :: Expr -> Spec Def
