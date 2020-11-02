@@ -12,12 +12,8 @@ tuning is performed by invoking the external paganini process. Its input specifi
 is constructed within a type-safe monadic action.
 -}
 module Data.Paganini
-  ( module Data.Paganini.Monad
-  , module Data.Paganini.Tuner
-  , module Data.Paganini.Expressions
-  )
-where
+  (module Data.Paganini.Monad
+  ,module Data.Paganini.Tuner) where
 
-import           Data.Paganini.Monad
-import           Data.Paganini.Tuner
-import           Data.Paganini.Expressions
+import Data.Paganini.Monad
+import Data.Paganini.Tuner
