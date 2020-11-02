@@ -1,18 +1,21 @@
 module Data.Paganini.Tuner
-  (tune
-  ,paganini
-  ,debugPaganini
-  ,PaganiniError(..)
-  ) where
+  ( tune
+  , tuneAlgebraic
+  , tuneRational
+  , paganini
+  , debugPaganini
+  , PaganiniError(..)
+  )
+where
 
-import           Prelude                    hiding (seq)
+import           Prelude                 hiding ( seq )
 
 import           Control.Exception
 import           Control.Monad.State.Strict
 
-import qualified Data.Map.Strict            as Map
+import qualified Data.Map.Strict               as Map
 
-import           Data.Maybe                 (mapMaybe)
+import           Data.Maybe                     ( mapMaybe )
 
 import           Data.Paganini.Expressions
 import           Data.Paganini.Monad
@@ -21,7 +24,7 @@ import           System.Exit
 import           System.IO
 import           System.Process
 
-import           Text.Read                  (readMaybe)
+import           Text.Read                      ( readMaybe )
 
 try' :: IO a -> IO (Either IOException a)
 try' = Control.Exception.try
@@ -42,7 +45,7 @@ data PaganiniError
 
 errorProgram :: PaganiniError -> Program
 errorProgram (PythonProcessError p) = p
-errorProgram (SolverFailure _ p)    = p
+errorProgram (SolverFailure _ p   ) = p
 
 instance Exception PaganiniError
 
@@ -58,7 +61,7 @@ debugPaganini :: Spec a -> IO (Either PaganiniError a)
 debugPaganini m = do
   status <- try (runStateT m initProgram)
   case status of
-    Right (x, p)  -> do
+    Right (x, p) -> do
       hPutStrLn stderr (problemStmt p)
       return $ Right x
     Left err -> do
@@ -73,20 +76,31 @@ tune v = do
   -- set target variable.
   modify (\s -> s { targetVar = Just v })
 
-  p <- get
+  p      <- get
   status <- liftIO $ runPaganini p
   case status of
-    Left err -> throw err
-    Right p' -> put p'
+    Left  err -> throw err
+    Right p'  -> put p'
+
+-- | Tunes the specification asserting that it is algebraic.
+tuneAlgebraic :: Variable -> Spec ()
+tuneAlgebraic v = do
+  modify (\s -> s { programType = Just Algebraic })
+  tune v
+
+-- | Tunes the specification asserting that it is rational.
+tuneRational :: Variable -> Spec ()
+tuneRational v = do
+  modify (\s -> s { programType = Just Rational })
+  tune v
 
 runPaganini :: Program -> IO (Either PaganiniError Program)
 runPaganini p = do
 
-  pp <- try' $ createProcess
-    (proc "python3" [])
-    { std_in  = CreatePipe
-    , std_out = CreatePipe
-    , std_err = CreatePipe }
+  pp <- try' $ createProcess (proc "python3" []) { std_in  = CreatePipe
+                                                 , std_out = CreatePipe
+                                                 , std_err = CreatePipe
+                                                 }
 
   case pp of
     Right (Just hin, Just hout, Just herr, ph) -> do

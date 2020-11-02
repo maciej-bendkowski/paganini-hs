@@ -12,6 +12,7 @@ module Data.Paganini.Expressions
   , Stmt(..)
   , FromVariable(..)
   , FromConstructor(..)
+  , ProgramType(..)
   , variables
   , problemStmt
   , initProgram
@@ -192,12 +193,20 @@ toPSpec (ConstrDef c) = shows (var c) . (" = pg." ++) . con
 toPSpec (VarDef v e) =
   ("spec.add(" ++) . shows v . (", " ++) . shows e . (")" ++)
 
+-- | Program type.
+data ProgramType = Rational | Algebraic
+
+instance Show ProgramType where
+  showsPrec _ Rational  = ("pg.Type.RATIONAL" ++)
+  showsPrec _ Algebraic = ("pg.Type.ALGEBRAIC" ++)
+
 -- | Interactive paganini program.
 data Program
- = Program { statements :: [Stmt]              -- ^ consecutive paganini statements
-           , values     :: Map Variable Double -- ^ variable values
-           , targetVar  :: Maybe Variable      -- ^ target tuning variable
-           , counter    :: Int                 -- ^ variable counter
+ = Program { statements  :: [Stmt]              -- ^ consecutive paganini statements
+           , values      :: Map Variable Double -- ^ variable values
+           , targetVar   :: Maybe Variable      -- ^ target tuning variable
+           , programType :: Maybe ProgramType   -- ^ program type
+           , counter     :: Int                 -- ^ variable counter
            }
 
 -- | Lists, in order, all variables defined in the given program.
@@ -231,10 +240,11 @@ instance Show Program where
 
 -- | Initial paganini program.
 initProgram :: Program
-initProgram = Program { statements = []
-                      , values     = Map.empty
-                      , targetVar  = Nothing
-                      , counter    = 0
+initProgram = Program { statements  = []
+                      , values      = Map.empty
+                      , targetVar   = Nothing
+                      , programType = Nothing
+                      , counter     = 0
                       }
 
 -- | Converts the given program into a paganini representation.
@@ -247,17 +257,25 @@ problemStmt p = unlines stmts' ""
       , ("spec = pg.Specification()" ++)
       ]
       ++ spec
-      ++ (runner : vs)
+      ++ (params : runner : vs)
 
   spec   = map toPSpec (statements p)
   runner = except
-    [ ("problem = spec.run_tuner(" ++) . targetV . (")" ++)
+    [ ("problem = spec.run_tuner(" ++) . targetV . paramsArg . (")" ++)
     , ("if problem == float(\"inf\"):" ++)
     , indent ("raise ValueError(\"Infeasible tuning problem.\")" ++)
     ]
 
+  params = case programType p of
+    Nothing -> ("" ++)
+    Just t  -> ("params = pg.Params(" ++) . shows t . (")" ++)
+
   targetV = case targetVar p of
     Nothing -> ("" ++)
     Just v  -> shows v
+
+  paramsArg = case programType p of
+    Nothing -> ("" ++)
+    Just _  -> (", params" ++)
 
   vs = map (\v -> ("print (" ++) . shows v . (".value)" ++)) $ variables p

@@ -290,7 +290,7 @@ testLambdaTerms' = paganini @@ do
   l .=. d + u * z * l + z * l ^ 2
   d .=. z + z * d
 
-  tune l
+  tuneAlgebraic l
   z' <- value z
   u' <- value u
   l' <- value l
@@ -438,6 +438,24 @@ testCircularGraphsAnon' = paganini $ do
   z' <- value z
   return [z']
 
+testBinaryWordsAnon :: TestTree
+testBinaryWordsAnon = testCase "Binary words"
+  $ testOutput "testBinaryWordsAnon" eps expected testBinaryWordsAnon'
+ where
+  eps      = 1.0e-3
+  expected = map Just [0.5]
+
+testBinaryWordsAnon' :: IO (Either PaganiniError [Maybe Double])
+testBinaryWordsAnon' = paganini $ do
+  Let z  <- variable' 1000
+  Let w  <- variable
+  Def w' <- seq (2 * z)
+  w .=. w'
+
+  tuneRational w
+  z' <- value z
+  return [z']
+
 main :: IO ()
 main = defaultMain unitTests
 
@@ -469,5 +487,6 @@ unitTests = testGroup
     , testCyclicDecompositionsAnon
     , testUrnsAnon
     , testCircularGraphsAnon
+    , testBinaryWordsAnon
     ]
   ]
