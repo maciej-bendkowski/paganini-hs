@@ -7,7 +7,7 @@ cabal-version: 1.12
 -- hash: d37e9b2637da762622878849f28f89d7661af15ea6dfb3cd8263324478aef9ff
 
 name:           paganini-hs
-version:        0.1.0.0
+version:        0.2.0.0
 description:    Please see the README on GitHub at <https://github.com/maciej-bendkowski/paganini-hs#readme>
 homepage:       https://github.com/maciej-bendkowski/paganini-hs#readme
 bug-reports:    https://github.com/maciej-bendkowski/paganini-hs/issues
@@ -33,12 +33,14 @@ library
       Data.Paganini.Tuner
       Data.Paganini.Utils
   build-depends:
-      containers
-    , multiset
-    , mtl
-    , process
-    , BinderAnn
-    , base >=4.7 && <5
+                  containers
+                , BinderAnn
+                , base >=4.7 && <5
+                , mtl
+                , multiset
+                , process
+                , tasty >= 1.2.3
+                , tasty-hunit >= 0.10.0.2
   hs-source-dirs:
       src
   ghc-options:
@@ -55,11 +57,13 @@ test-suite test-paganini-hs
   main-is:             UnitTests.hs
   hs-source-dirs:      test
   build-depends:
-    BinderAnn
-    , tasty
-    , tasty-hunit
-    , paganini-hs
-    , base >=4.7 && <5
+                  BinderAnn
+                , base >=4.7 && <5
+                , paganini-hs
+                , tasty
+                , tasty >= 1.2.3
+                , tasty-hunit
+                , tasty-hunit >= 0.10.0.2
   ghc-options:
     -O2
     -Wall
