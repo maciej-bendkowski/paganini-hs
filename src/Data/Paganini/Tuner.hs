@@ -3,7 +3,9 @@ module Data.Paganini.Tuner
   , tuneAlgebraic
   , tuneRational
   , paganini
+  , paganini'
   , debugPaganini
+  , debugPaganini'
   , PaganiniError(..)
   )
 where
@@ -52,14 +54,28 @@ instance Exception PaganiniError
 -- | Tunes the given specification computation, running an external paganini process.
 --   Its result is an IO action representing either an error or the actual computation value.
 paganini :: Spec a -> IO (Either PaganiniError a)
-paganini m = try $ evalStateT m initProgram
+paganini = paganiniIO initProgram
+
+-- | Variant of paganini skipping paganini's sanity checks.
+paganini' :: Spec a -> IO (Either PaganiniError a)
+paganini' = paganiniIO initProgram'
+
+paganiniIO :: Program -> Spec a -> IO (Either PaganiniError a)
+paganiniIO pro m = try $ evalStateT m pro
 
 -- | Tunes the given specification computation, running an external paganini process.
 --   Its result is the same as `paganini` however, in addition, it prints the underlying
 --   paganini specification on the stderr.
 debugPaganini :: Spec a -> IO (Either PaganiniError a)
-debugPaganini m = do
-  status <- try (runStateT m initProgram)
+debugPaganini = debugPaganiniIO initProgram
+
+-- | Variant of debugPaganini skipping paganini's sanity checks.
+debugPaganini' :: Spec a -> IO (Either PaganiniError a)
+debugPaganini' = debugPaganiniIO initProgram'
+
+debugPaganiniIO :: Program -> Spec a -> IO (Either PaganiniError a)
+debugPaganiniIO pro m = do
+  status <- try $ runStateT m pro
   case status of
     Right (x, p) -> do
       hPutStrLn stderr (problemStmt p)

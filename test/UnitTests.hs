@@ -280,7 +280,7 @@ testLambdaTerms = testCase "Lambda terms"
   expected = map Just [0.24482714, 1.78303233, 1.15073912]
 
 testLambdaTerms' :: IO (Either PaganiniError [Maybe Double])
-testLambdaTerms' = paganini @@ do
+testLambdaTerms' = paganini' @@ do
   Let z <- variable' 100000
   Let u <- variable' 40000
 

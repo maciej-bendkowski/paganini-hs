@@ -16,6 +16,7 @@ module Data.Paganini.Expressions
   , variables
   , problemStmt
   , initProgram
+  , initProgram'
   )
 where
 
@@ -206,6 +207,7 @@ data Program
            , values      :: Map Variable Double -- ^ variable values
            , targetVar   :: Maybe Variable      -- ^ target tuning variable
            , programType :: Maybe ProgramType   -- ^ program type
+           , force       :: Bool                -- ^ whether to use Method.FORCE
            , counter     :: Int                 -- ^ variable counter
            }
 
@@ -244,8 +246,12 @@ initProgram = Program { statements  = []
                       , values      = Map.empty
                       , targetVar   = Nothing
                       , programType = Nothing
+                      , force       = False
                       , counter     = 0
                       }
+
+initProgram' :: Program
+initProgram' = initProgram { force = True }
 
 -- | Converts the given program into a paganini representation.
 problemStmt :: Program -> String
@@ -261,7 +267,7 @@ problemStmt p = unlines stmts' ""
 
   spec   = map toPSpec (statements p)
   runner = except
-    [ ("problem = spec.run_tuner(" ++) . targetV . paramsArg . (")" ++)
+    [ ("problem = spec.run_tuner(" ++) . targetV . paramsArg . method . (")" ++)
     , ("if problem == float(\"inf\"):" ++)
     , indent ("raise ValueError(\"Infeasible tuning problem.\")" ++)
     ]
@@ -277,5 +283,9 @@ problemStmt p = unlines stmts' ""
   paramsArg = case programType p of
     Nothing -> ("" ++)
     Just _  -> (", params" ++)
+
+  method = if force p
+    then (", method = pg.Method.FORCE" ++)
+    else (", method = pg.Method.STRICT" ++)
 
   vs = map (\v -> ("print (" ++) . shows v . (".value)" ++)) $ variables p
