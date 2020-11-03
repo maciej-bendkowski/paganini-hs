@@ -60,9 +60,7 @@ isConstant = MultiSet.null . power
 
 instance Show Monomial where
   showsPrec _ m
-    | isConstant m = case coeff m of
-      0 -> ("" ++)
-      n -> shows n
+    | isConstant m = shows (coeff m)
     | otherwise = case coeff m of
       -1 -> ("-" ++) . powers'
       0  -> ("" ++)
