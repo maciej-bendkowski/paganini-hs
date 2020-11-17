@@ -266,6 +266,10 @@ problemStmt p = unlines stmts' ""
   spec   = map toPSpec (statements p)
   runner = except
     [ ("problem = spec.run_tuner(" ++) . targetV . paramsArg . method . (")" ++)
+    , ("if problem is None:" ++)
+    , indent
+      ("raise ValueError(\"Could not solve the problem using the current solver configuration.\")" ++
+      )
     , ("if problem == float(\"inf\"):" ++)
     , indent ("raise ValueError(\"Infeasible tuning problem.\")" ++)
     ]
