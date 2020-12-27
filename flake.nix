@@ -8,7 +8,7 @@
   inputs.mach-nix.url = "github:DavHau/mach-nix";
 
   outputs = { self, nixpkgs, flake-utils, mach-nix }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+    flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
       let
 
         name = "pagnaini-hs";
