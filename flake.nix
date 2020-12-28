@@ -57,7 +57,8 @@
             haskellPackages.haskell-language-server
             haskellPackages.hlint
             haskellPackages.ormolu
-            cabal2nix
+            haskellPackages.cabal2nix
+            paganini-custom
           ];
         };
 
