@@ -14,6 +14,7 @@ module Data.Paganini.Expressions
   , FromConstructor(..)
   , ProgramType(..)
   , variables
+  , definitions
   , problemStmt
   , initProgram
   , initProgram'
@@ -203,6 +204,7 @@ instance Show ProgramType where
 data Program
  = Program { statements  :: [Stmt]              -- ^ consecutive paganini statements
            , values      :: Map Variable Double -- ^ variable values
+           , ddgs        :: Map Variable [Int]  -- ^ variable DDGs
            , targetVar   :: Maybe Variable      -- ^ target tuning variable
            , programType :: Maybe ProgramType   -- ^ program type
            , force       :: Bool                -- ^ whether to use Method.FORCE
@@ -215,6 +217,15 @@ variables p = mapMaybe
   (\case
     VarAssign v -> Just v
     ConstrDef c -> Just $ var c
+    _           -> Nothing
+  )
+  (statements p)
+
+definitions :: Program -> [Variable]
+definitions p = mapMaybe
+  (\case
+    ConstrDef c -> Just $ var c
+    VarDef c _  -> Just c
     _           -> Nothing
   )
   (statements p)
@@ -242,6 +253,7 @@ instance Show Program where
 initProgram :: Program
 initProgram = Program { statements  = []
                       , values      = Map.empty
+                      , ddgs        = Map.empty
                       , targetVar   = Nothing
                       , programType = Nothing
                       , force       = False
@@ -261,7 +273,7 @@ problemStmt p = unlines stmts' ""
       , ("spec = pg.Specification()" ++)
       ]
       ++ spec
-      ++ (params : runner : vs)
+      ++ (params : runner : vs ++ ds)
 
   spec   = map toPSpec (statements p)
   runner = except
@@ -291,3 +303,6 @@ problemStmt p = unlines stmts' ""
     else (", method = pg.Method.STRICT" ++)
 
   vs = map (\v -> ("print (" ++) . shows v . (".value)" ++)) $ variables p
+
+  ds =
+    map (\v -> ("print (spec.ddg(" ++) . shows v . ("))" ++)) $ definitions p

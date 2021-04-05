@@ -44,6 +44,13 @@ testOutput
 testOutput msg eps out = testPaganini testCase'
   where testCase' = assertEqualList msg eps out
 
+testFailure :: IO (Either a b) -> IO ()
+testFailure comp = do
+  x <- comp
+  case x of
+    Left  _ -> return ()
+    Right _ -> assertFailure "Expected a failure."
+
 testBinTrees :: TestTree
 testBinTrees = testCase "Binary trees"
   $ testOutput "testBinTrees" eps expected testBinTrees'
@@ -161,11 +168,8 @@ testSimpleTreesAnon' = paganini $ do
   return [z', t']
 
 testMinusConstant :: TestTree
-testMinusConstant = testCase "Trees with subtraction"
-  $ testOutput "testMinusConstant" eps expected testMinusConstant'
- where
-  eps      = 1.0e-4
-  expected = map Just [0.5]
+testMinusConstant =
+  testCase "Trees with subtraction" $ testFailure testMinusConstant'
 
 testMinusConstant' :: IO (Either PaganiniError [Maybe Double])
 testMinusConstant' = paganini @@ do
@@ -179,11 +183,8 @@ testMinusConstant' = paganini @@ do
   return [z']
 
 testMinusConstantAnon :: TestTree
-testMinusConstantAnon = testCase "Trees with subtraction"
-  $ testOutput "testMinusConstantAnon" eps expected testMinusConstantAnon'
- where
-  eps      = 1.0e-4
-  expected = map Just [0.5]
+testMinusConstantAnon =
+  testCase "Trees with subtraction" $ testFailure testMinusConstantAnon'
 
 testMinusConstantAnon' :: IO (Either PaganiniError [Maybe Double])
 testMinusConstantAnon' = paganini $ do

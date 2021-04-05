@@ -39,6 +39,9 @@ writePaganini p = runPaganini' (problemStmt p)
 readValue :: String -> Maybe Double
 readValue = readMaybe
 
+readDDG :: String -> Maybe [Int]
+readDDG = readMaybe
+
 -- | Errors occurring while interacting with paganini.
 data PaganiniError
   = PythonProcessError Program    -- ^ Could not create a 'python3' process.
@@ -132,8 +135,11 @@ runPaganini p = do
         _ -> do
 
           out <- hGetContents hout
-          let xs = mapMaybe readValue (lines out)
-          let ys = zip (variables p) xs
-          return $ Right p { values = Map.fromList ys }
+          let n            = length (variables p)
+          let (xs, ds)     = splitAt n (lines out)
+          let (xs', ds')   = (mapMaybe readValue xs, mapMaybe readDDG ds)
+          let (xs'', ds'') = (zip (variables p) xs', zip (definitions p) ds')
+          return
+            $ Right p { values = Map.fromList xs'', ddgs = Map.fromList ds'' }
 
     _ -> return $ Left (PythonProcessError p)

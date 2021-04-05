@@ -26,6 +26,7 @@ module Data.Paganini.Monad
   , Constraint(..)
   , FromConstructor(..)
   , FromVariable(..)
+  , Sampleable(..)
   )
 where
 
@@ -107,6 +108,7 @@ value v = do
   xs <- gets values
   return $ v `Map.lookup` xs
 
+
 -- | Polymorphic constructor variables.
 newtype Def = Def (forall a . FromConstructor a => a)
 
@@ -141,6 +143,22 @@ constr' s e ctr = do
   modify (\p -> p { statements = stmts ++ [ConstrDef c] })
 
   return (Def $ fromConstructor c)
+
+-- | Class of types which can be sampled.
+class Sampleable a where
+  -- | Extracts the variable DDG in linear encoded form.
+  --   Note: if the specification is not tuned, then no DDG is returned.
+  ddg :: a -> Spec (Maybe [Int])
+
+instance Sampleable Let where
+  ddg (Let v) = do
+    xs <- gets ddgs
+    return $ v `Map.lookup` xs
+
+instance Sampleable Def where
+  ddg (Def v) = do
+    xs <- gets ddgs
+    return $ (var v) `Map.lookup` xs
 
 -- | Sequence constructor.
 seq :: Expr -> Spec Def
