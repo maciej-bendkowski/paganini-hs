@@ -7,7 +7,7 @@ cabal-version: 1.12
 -- hash: d37e9b2637da762622878849f28f89d7661af15ea6dfb3cd8263324478aef9ff
 
 name:           paganini-hs
-version:        0.2.1.0
+version:        0.3.0.0
 description:    Please see the README on GitHub at <https://github.com/maciej-bendkowski/paganini-hs#readme>
 homepage:       https://github.com/maciej-bendkowski/paganini-hs#readme
 bug-reports:    https://github.com/maciej-bendkowski/paganini-hs/issues
