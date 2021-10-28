@@ -1,0 +1,7 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "paganini-hs:lib"
+
+    - path: "./test"
+      component: "paganini-hs:test:test-paganini-hs"
