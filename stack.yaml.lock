@@ -5,43 +5,20 @@
 
 packages:
 - completed:
-    hackage: process-1.6.5.0@sha256:0f42f038aca38f990b68083a1b5bed34ace91b93539095a9ec1e2d44cd435ddb,2469
-    pantry-tree:
-      size: 1211
-      sha256: 853918f4b144d67d8246a82ad65bd3dfbcfde71aefb69386c1bbd6a8e53a95c4
-  original:
-    hackage: process-1.6.5.0
-- completed:
-    hackage: tasty-1.2.3@sha256:bba67074e5326d57e8f53fc1dabcb6841daa4dc51b053506eb7f40a6f49a0497,2517
-    pantry-tree:
-      size: 1725
-      sha256: 2f1bd0e1e1e105bdc8ee9eb53b55a6db54c67d0dce86ba08b61dbaf8988c5d58
-  original:
-    hackage: tasty-1.2.3
-- completed:
-    hackage: tasty-hunit-0.10.0.2@sha256:8e8bd5807cec650f5aebc5ada07b57620c863e69145e65249651c1b48d97bd70,1515
-    pantry-tree:
-      size: 399
-      sha256: 798ead058109874a86df2822aa4bdb909132b9a61b102d32e5af802c8366aa50
-  original:
-    hackage: tasty-hunit-0.10.0.2
-- completed:
-    cabal-file:
-      size: 1839
-      sha256: a7b0c442ec90695d60bcfeaeba2960b0b33a3acbfd598c777dd2863dcb967622
     name: BinderAnn
-    version: 0.1.0.0
-    git: https://github.com/OctopiChalmers/BinderAnn
     pantry-tree:
-      size: 1560
-      sha256: 9c1c91759f82b84caba035f14dbe51675bad8f2161fcdea66aae886e44e439ad
-    commit: fcae12a50c8b105f48b575b0787107752a170ec3
-  original:
+      sha256: 2e2b0b9828f0bd3698344940c4da689947b4530ae75ccc51b03c77db171244e3
+      size: 1631
+    commit: 8f082b23ebd4e79e86e934f41ddfcba59652fadd
     git: https://github.com/OctopiChalmers/BinderAnn
-    commit: fcae12a50c8b105f48b575b0787107752a170ec3
+    version: 0.1.0.0
+  original:
+    commit: 8f082b23ebd4e79e86e934f41ddfcba59652fadd
+    git: https://github.com/OctopiChalmers/BinderAnn
 snapshots:
 - completed:
-    size: 523700
-    url: https://raw.maciej-bendkowskicontent.com/commercialhaskell/stackage-snapshots/master/lts/14/7.yaml
-    sha256: 8e3f3c894be74d71fa4bf085e0a8baae7e4d7622d07ea31a52736b80f8b9bb1a
-  original: lts-14.7
+    sha256: cdead65fca0323144b346c94286186f4969bf85594d649c49c7557295675d8a5
+    size: 586286
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/16.yaml
+  original:
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/16.yaml
