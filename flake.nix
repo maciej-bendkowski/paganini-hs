@@ -1,20 +1,15 @@
 {
   description = "nix flake support for paganini-hs";
 
-  inputs.nixpkgs.url = "github:NixOs/nixpkgs/nixpkgs-unstable"; 
-  
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  inputs.mach-nix.url = "github:DavHau/mach-nix";
-
-  outputs = { self, nixpkgs, flake-utils, mach-nix }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
 
         name = "pagnaini-hs";
-        
-        # paganini-hs dependency BinderAnn won't compile with later ghc versions 
-        compiler = "ghc865";  
+        compiler = "ghc925";
          
         pkgs = import nixpkgs {
           inherit system;
@@ -23,24 +18,52 @@
             allowBroken = true;
             allowUnsupportedSystem = true;
           };
-          # overlays = [] # Add or tweak non-Haskell packages here.
         };
 
-        mylib = mach-nix.lib.${system}; # adds mkPython, mkPythonShell, etc. 
+        optas = p: with p;
+          (
+            buildPythonPackage rec {
+              pname = "optas";
+              version = "1.0.3";
+              src = fetchPypi {
+                inherit pname version;
+                sha256 = "sha256-92aaW9ZxvRy/dfYhw7IS+lfDAP2UuBuJhNDNTW7Xkzc=";
+              };
+              doCheck = false;
+            }
+          );
 
-        paganini-custom = mylib.mkPython {
-          requirements = ''
-            paganini==1.5.0
-            cvxpy>=1.1.7 
-            scs==2.1.1-2 # scs 2.1.2 broken 
-          '';
-        };
+        paganini = p: with p;
+          (
+            buildPythonPackage rec {
+              pname = "paganini";
+              version = "1.5.0";
+              src = fetchPypi {
+                inherit pname version;
+                sha256 = "sha256-hsDqONhBPQlgQHKBh5tdp/pzoXynUz7ztXXILrGgslo=";
+              };
+              doCheck = false;
+              propagatedBuildInputs = [
+                pkgs.python3Packages.numpy
+                pkgs.python3Packages.sympy
+                pkgs.python3Packages.scipy
+                pkgs.python3Packages.networkx
+                pkgs.python3Packages.cvxpy
+                (optas p)
+              ];
+            }
+          );
+
+        pythonPackages = p: with p; [
+          (optas p)
+          (paganini p)
+        ];
        
         haskellPackages = pkgs.haskell.packages.${compiler}.override {
           overrides = self: super: {
-            #"${name}" = self.callCabal2nix name ./. {};
-            "${name}" = self.callPackage ./. { paganini = paganini-custom; };
-            # Override other Haskell packages as needed here.
+            "${name}" = self.callPackage ./. {
+              paganini = (pkgs.python3.withPackages pythonPackages);
+            };
           };
         };
         
@@ -48,17 +71,14 @@
           withHoogle = true; # Provides docs, optional. 
           packages = p: [
             p."${name}"
-            # Add other Haskell packages below if you just want a Haskell hacking env.
-            # p.lens
-          ]; 
+          ];
+
           buildInputs = with pkgs; [
-            haskellPackages.cabal-install
-            haskellPackages.ghcid
+            haskellPackages.stack
             haskellPackages.haskell-language-server
             haskellPackages.hlint
-            haskellPackages.ormolu
-            haskellPackages.cabal2nix
-            paganini-custom
+            haskellPackages.fourmolu
+            (pkgs.python3.withPackages pythonPackages)
           ];
         };
 
