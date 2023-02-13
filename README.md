@@ -3,13 +3,11 @@
 `paganini-hs` is an experimental EDSL (embedded domain specific language) meant
 as a Haskell wrapper for
 [paganini](https://github.com/maciej-bendkowski/paganini) -- a multiparametric
-combinatorial specification tuner written in Python. `paganini-hs` uses
-[BinderAnn](https://github.com/OctopiChalmers/BinderAnn) to capture user-defined
-variables and use them in the construction of `paganini` input specifications.
+combinatorial specification tuner written in Python.
 
 Example use:
 ```haskell
-testBinTrees' = paganini @@ do
+testBinTrees' = paganini $ do
   Let z <- variable' 100000
   Let b <- variable
 

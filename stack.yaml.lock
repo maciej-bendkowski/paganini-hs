@@ -3,22 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    name: BinderAnn
-    pantry-tree:
-      sha256: 2e2b0b9828f0bd3698344940c4da689947b4530ae75ccc51b03c77db171244e3
-      size: 1631
-    commit: 8f082b23ebd4e79e86e934f41ddfcba59652fadd
-    git: https://github.com/OctopiChalmers/BinderAnn
-    version: 0.1.0.0
-  original:
-    commit: 8f082b23ebd4e79e86e934f41ddfcba59652fadd
-    git: https://github.com/OctopiChalmers/BinderAnn
+packages: []
 snapshots:
 - completed:
-    sha256: cdead65fca0323144b346c94286186f4969bf85594d649c49c7557295675d8a5
-    size: 586286
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/16.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/16.yaml
+    sha256: adbc602422dde10cc330175da7de8609e70afc41449a7e2d6e8b1827aa0e5008
+    size: 649342
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/11.yaml
+  original: lts-20.11
